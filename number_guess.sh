@@ -34,7 +34,7 @@ MAIN () {
       #player already existing
       USER_DATA=$($PSQL "SELECT username, games_played, best_game FROM users WHERE username = '$USERNAME'")
       IFS='|' read USERNAME_FROM_DB GAMES_PLAYED BEST_GAME <<< "$USER_DATA" 
-      echo -e "Welcome back, '$USERNAME_FROM_DB'! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+      echo -e "Welcome back, $USERNAME_FROM_DB! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
     fi
 
 
@@ -74,10 +74,11 @@ MAIN () {
 
     done
 
+  
     if (( USER_NUMBER == RANDOM_NUMBER ))
     then
 
-      (( GAME_PLAYED++ ))
+      (( GAMES_PLAYED++ ))
 
       # if [[ $NUMBER_TRIES < $BEST_GAME || $BEST_GAME == 0  ]]
       if (( NUMBER_TRIES < BEST_GAME || BEST_GAME == 0 ))
@@ -101,21 +102,37 @@ MAIN () {
 
 GUESS_NUMBER () {
 
-  if [[ $1 ]]
-  then
-    echo $1
-  fi
+  # if [[ $1 ]]
+  # then
+  #   echo $1
+  # fi
 
-  read USER_NUMBER
+  USER_NUMBER=''
 
-  if [[ ! $USER_NUMBER =~ ^[0-9]+$ ]] # && $USER_NUMBER <= 0
-  then
-    echo -e "\nThat is not an integer, guess again:"
-    # GUESS_NUMBER "That is not an integer, guess again:"
-    GUESS_NUMBER
-  fi
+  # read USER_NUMBER
 
-  echo "$USER_NUMBER"
+  # if [[ ! $USER_NUMBER =~ ^[0-9]+$ ]] # && $USER_NUMBER <= 0
+  # then
+  #   echo -e "\nThat is not an integer, guess again:"
+  #   # GUESS_NUMBER "That is not an integer, guess again:"
+  #   GUESS_NUMBER
+  # fi
+
+  while true
+  do
+
+    read USER_NUMBER
+
+    if [[ ! $USER_NUMBER =~ ^[0-9]+$ ]] 
+    then
+      echo -e "\nThat is not an integer, guess again:"
+      # GUESS_NUMBER "That is not an integer, guess again:"
+    else
+      echo "$USER_NUMBER"
+      return 0
+    fi    
+
+  done
 
 }
 
