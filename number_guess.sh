@@ -34,7 +34,7 @@ MAIN () {
       #player already existing
       USER_DATA=$($PSQL "SELECT username, games_played, best_game FROM users WHERE username = '$USERNAME'")
       IFS='|' read USERNAME_FROM_DB GAMES_PLAYED BEST_GAME <<< "$USER_DATA" 
-      echo -e "Welcome back, '$USERNAME_FROM_DB'! You have played $GAME_PLAYED games, and your best game took $BEST_GAME guesses."
+      echo -e "Welcome back, '$USERNAME_FROM_DB'! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
     fi
 
 
@@ -46,38 +46,47 @@ MAIN () {
     USER_NUMBER=$(GUESS_NUMBER)
 
 
-    NUMBER_TRIES=0
+    (( NUMBER_TRIES++ ))
+
+    echo $RANDOM_NUMBER
+    echo $USER_NUMBER
+
 
 
     while (( USER_NUMBER != RANDOM_NUMBER ))
     do
 
       (( NUMBER_TRIES++ ))
-
-      if [[ $USER_NUMBER < $RANDOM_NUMBER ]]
+      
+      if (( USER_NUMBER < RANDOM_NUMBER ))
       then
-        USER_NUMBER=$(GUESS_NUMBER "It's lower than that, guess again: ")
+        echo -e "It's higher than that, guess again: "
+        # USER_NUMBER=$(GUESS_NUMBER "It's lower than that, guess again: ")
+        USER_NUMBER=$(GUESS_NUMBER)
       fi
 
-      if [[ $USER_NUMBER > $RANDOM_NUMBER ]]
+      if (( USER_NUMBER > RANDOM_NUMBER ))
       then
-        USER_NUMBER=$(GUESS_NUMBER "It's higher than that, guess again: ")
+        echo -e "It's lower than that, guess again: "
+        # USER_NUMBER=$(GUESS_NUMBER "It's higher than that, guess again: ")
+        USER_NUMBER=$(GUESS_NUMBER)
       fi
 
     done
 
-    if [[ $USER_NUMBER == $RANDOM_NUMBER ]]
+    if (( USER_NUMBER == RANDOM_NUMBER ))
     then
 
       (( GAME_PLAYED++ ))
 
-      if [[ $NUMBER_TRIES < $BEST_GAME ]]
+      # if [[ $NUMBER_TRIES < $BEST_GAME || $BEST_GAME == 0  ]]
+      if (( NUMBER_TRIES < BEST_GAME || BEST_GAME == 0 ))
       then
         BEST_GAME=$NUMBER_TRIES
       fi
 
       # INSERT_NEW_DATA=$($PSQL "INSERT INTO users(games_played, best_game) VALUES ($GAME_PLAYED, $NUMBER_TRIES)")
-      INSERT_NEW_DATA=$($PSQL "UPDATE users SET games_played = $GAMES_PLAYED, best_game = $NUMBER_TRIES WHERE username = '$USERNAME'")
+      INSERT_NEW_DATA=$($PSQL "UPDATE users SET games_played = $GAMES_PLAYED, best_game = $BEST_GAME WHERE username = '$USERNAME'")
       
       echo "You guessed it in $NUMBER_TRIES tries. The secret number was $USER_NUMBER. Nice job!"
 
@@ -101,8 +110,9 @@ GUESS_NUMBER () {
 
   if [[ ! $USER_NUMBER =~ ^[0-9]+$ ]] # && $USER_NUMBER <= 0
   then
-    # echo -e "\nThat is not an integer, guess again:"
-    GUESS_NUMBER "That is not an integer, guess again:"
+    echo -e "\nThat is not an integer, guess again:"
+    # GUESS_NUMBER "That is not an integer, guess again:"
+    GUESS_NUMBER
   fi
 
   echo "$USER_NUMBER"
