@@ -37,10 +37,46 @@ MAIN () {
       echo -e "Welcome back, '$USERNAME_FROM_DB'! You have played $GAME_PLAYED games, and your best game took $BEST_GAME guesses."
     fi
 
+
     echo -e "Guess the secret number between 1 and 1000:"
 
-    
+    RANDOM_NUMBER=(( RANDOM % 1000 + 1 ))
 
+    GUESS_NUMBER
+
+    NUMBER_TRIES=0
+
+
+    while $USER_NUMBER != $RANDOM_NUMBER
+    do
+
+      $NUMBER_TRIES++
+
+      if [[ $USER_NUMBER < $RANDOM_NUMBER ]]
+      then
+        GUESS_NUMBER "It's lower than that, guess again: "
+      fi
+
+      if [[ $USER_NUMBER > $RANDOM_NUMBER ]]
+      then
+        GUESS_NUMBER "It's higher than that, guess again: "
+      fi
+
+      if [[ $USER_NUMBER == $RANDOM_NUMBER ]]
+      then
+        $GAME_PLAYED++
+
+        if [[ $NUMBER_TRIES < $BEST_GAME ]]
+        then
+          BEST_GAME=$NUMBER_TRIES
+        fi
+
+        INSERT_NEW_DATA=$($PSQL "INSERT INTO users(games_played, best_game) VALUES ($GAME_PLAYED, $NUMBER_TRIES)")
+        echo "You guessed it in $NUMBER_TRIES tries. The secret number was $USER_NUMBER. Nice job!"
+
+      fi
+
+    done
 
   fi
 
@@ -48,3 +84,22 @@ MAIN () {
 }
 
 MAIN
+
+GUESS_NUMBER () {
+
+  read USER_NUMBER
+
+  if [[ ! $USER_NUMBER =~ ^[0-9]+$ ]] # && $USER_NUMBER <= 0
+  then
+    # echo -e "\nThat is not an integer, guess again:"
+    GUESS_NUMBER "That is not an integer, guess again:"
+  fi
+
+  # echo -e "Guess the secret number between 1 and 1000:"
+  # RANDOM_NUMBER=(( RANDOM % 1000 + 1 ))
+  # read USER_NUMBER
+  # if [[ $USER_NUMBER != $RANDOM_NUMBER ]]
+  # then
+  # fi
+
+}
